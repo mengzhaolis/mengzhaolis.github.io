@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="hexo+github搭建静态blog+更换主题"/><link rel="alternate" href="/atom.xml" title="从入门到删除数据库">
+<link rel="canonical" href="http://yoursite.com/2020/04/21/hexo-github搭建静态blog-更换主题/"/>
+
+
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":"","toc":"","fancybox":"","pjax":"","latex":""};
+</script>
+
+    <title>hexo+github搭建静态blog+更换主题 - 从入门到删除数据库</title>
+  <meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">从入门到删除数据库</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">从入门到删除数据库</a>
+</div>
+
+<nav class="site-navbar"></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">hexo+github搭建静态blog+更换主题
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2020-04-21
+        </span></div>
+    </header>
+
+    <div class="post-content"><p><strong>准备工作</strong></p>
+<p><code>1、GitHub账号一个，创建自己的仓库</code></p>
+<p><code>2、安装git</code></p>
+<p><code>3、安装node.js</code></p>
+<p><code>4、安装hexo</code></p>
+<p><strong>准备搭建</strong></p>
+<p>如果你已经有GitHub的帐号了那么恭喜你，搭建个人blog对你来说易如反掌，如果你还没有GitHub账号那么不要着急只需要在浏览器中输入网址<a href="https://github.com" target="_blank" rel="noopener">https://github.com</a>  然后点击下图中标识的地方，提交以下资料即完成了注册</p>
+<p><img src="/images/hexo_github/1.png" alt="alt"></p>
+<p>现在我们假设你已经注册并且登录GitHub了，那么这个时候你需要创建一个仓库(点击网页右上角的加号)，来存储你自己blog的代码，wait wait当你在创建仓库的时候需要注意的是看下图</p>
+<p><img src="/images/hexo_github/2.png" alt="alt"></p>
+<p>创建好blog的仓库之后需要做两步检查，第一步检查本地是否安装git，直接在电脑桌面右键即可，第二步检查本地是否安装node，可以打开cmd然后键入 <em>node -v</em>，如果git 和node.js都已经安装，那么你就可以将刚刚创建的仓库克隆到本地，进行下一步操作</p>
+<p>桌面右键检查git出现如下即可使用</p>
+<p><img src="/images/hexo_github/3.png" alt="alt"></p>
+<p>cmd中键入node -v</p>
+<p><img src="/images/hexo_github/4.png" alt="alt"></p>
+<p><strong>注意：</strong>如果你是首次使用git那么请注意我们需要将git的ssh添加到GitHub，这里请自行百度就不一 一赘述了</p>
+<p>如果你没有安装node.js那么你可以去  <a href="http://nodejs.cn/download/" target="_blank" rel="noopener">http://nodejs.cn/download/</a>   这里现在适合你点单的版本然后解压双击就可以安装了，需要注意的是最好给node配置一下全局变量，这样更加方便操作</p>
+<p><strong>开始搭建</strong></p>
+<p>首先执行 <em>git clone xxxxx</em>  (你的blog地址)将刚刚创建的仓库克隆到本地</p>
+<p>然后<em>cd xxx</em> (你的仓库名称)进入到你的仓库里，执行完这些，下面就是激动人心的时刻了因为我们已经安装了node那我们直接使用npm来安装Hexo</p>
+<p>使用npm 安装 Hexo：</p>
+<p><code>npm install -g hexo-cli</code></p>
+<p>这是一个需要等待的过程，安装完成后我们初始化自己的博客</p>
+<p><code>hexo init blog</code></p>
+<p><strong>注意：</strong>以下命令都是作用在刚刚初始化的blog中的所以，当你初始化完成blog的时候你需要<strong>cd blog</strong></p>
+<p>我们按顺序执行以下命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo new test_my_site</span><br><span class="line">hexo g</span><br><span class="line">hexo s</span><br></pre></td></tr></table></figure>
+
+<p><em>hexo new test_my_site 含义：创建一个名为test_my_site.md的文件</em></p>
+<p><em>hexo g 含义：生成网页</em></p>
+<p><em>hexo s 含义：启动服务预览(在本地预览)</em></p>
+<p>执行完hexo s之后你会看到如下</p>
+<p><img src="/images/hexo_github/5.png" alt="alt"></p>
+<p>复制<a href="http://localhost:4000" target="_blank" rel="noopener">http://localhost:4000</a>   在你的浏览器中打开你就可以看到博客的初始化的样子了</p>
+<p>以上只是在本地预览接下来的也就是要将本地发布到线上在这之前我们需要了解下hexo博客的文件意义，打开你刚刚生成的blog会看到如下</p>
+<p><img src="/images/hexo_github/6.png" alt="alt"></p>
+<p>了解完这些，我们需要将<em>hexo和github</em>链接起来从而实现自动化发布</p>
+<p>首先打开我们的站点配置文件，也就是你的blog文件夹下的<em>_config.yml</em> 在打开后滑动到最后修改为以下内容</p>
+<p><img src="/images/hexo_github/7.png" alt="alt"></p>
+<p>然后保存站点文件</p>
+<p>这么配置的含义其实就是为<em>hexo d</em>这个命令做相应的配置，让hexo知道你的blog部署的位置在哪里，所以注意上面图片上的<strong>repo</strong>你要替换成你自己的仓库地址因为你要部署到你的GitHub上</p>
+<p>接下来我们安装git部署插件输入命令：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-deployer-git --save</span><br></pre></td></tr></table></figure>
+
+<p>完成之后我们按顺序依次执行下面命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean </span><br><span class="line">hexo g </span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
+<p><em>hexo clean 含义：清除缓存</em></p>
+<p><em>hexo g 含义：生成网页</em></p>
+<p><em>hexo d 含义：部署到服务端</em></p>
+<p>完成以上这些之后你可以在浏览器中键入你的仓库名称 比如我的地址是 <a href="https://mengzhaolis,github.io" target="_blank" rel="noopener">https://mengzhaolis,github.io</a>   然后回车，这个时候你会发现你自己的博客已经搭建成功,但是这个时候你可能会觉得这个blog的页面真的是丑爆了，那么请不要灰心，继续读下去</p>
+<p><strong>Hexo 更换主题</strong></p>
+<p>hexo提供了n多种主题，具体使用哪一种大家可以根据自己的喜好，下面我仅用我使用的主题做演示，主题的更换步骤是一样的</p>
+<p>首先选择自己喜欢的主题，比如我选用的是<em>hexo-theme-even</em></p>
+<p>这里存在一个坑，好多博客上介绍的是直接git clone hexo-theme-even的地址安装到项目下的themes文件夹中，然后更改站点配置文件在执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
+<p>但是这样执行完成后你会发现你的blog好像网页缺少了css，相当的难看，这个问题的原因确实是没有css</p>
+<p>所以我们应该在blog下执行命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install hexo-renderer-scss --save</span><br></pre></td></tr></table></figure>
+
+<p>完成<em>hexo-renderer-scss</em>插件</p>
+<p>然后再执行命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https:&#x2F;&#x2F;github.com&#x2F;ahonn&#x2F;hexo-theme-even themes&#x2F;even</span><br></pre></td></tr></table></figure>
+
+<p>将hexo-theme-even主题下载到themes目录下</p>
+<p>至此，hexo-theme-even就安装到了你的博客中</p>
+<p><strong>使用主题</strong></p>
+<p> 修改博客根目录下的配置文件（<code>_config.yml</code>），启用 Even 主题。 修改 <code>theme</code> 字段为 <code>even</code>: </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># Extensions</span><br><span class="line">## Plugins: http:&#x2F;&#x2F;hexo.io&#x2F;plugins&#x2F;</span><br><span class="line">## Themes: http:&#x2F;&#x2F;hexo.io&#x2F;themes&#x2F;</span><br><span class="line">theme: even</span><br></pre></td></tr></table></figure>
+
+<p>更改完成后可以先执行hexo s在本地浏览，没问题的话可以依次执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
+<p>发布到远程到此hexo+GitHub+更换主题完成</p>
+<p><strong>本地发布到GitHub出现的问题</strong></p>
+<p>当你在执行自动化部署到GitHub时可能会出现</p>
+<p><img src="/images/hexo_github/8.png" alt="alt"></p>
+<p>这是因为你本地版本和GitHub上的版本不一致导致的</p>
+<p><strong>解决办法：</strong></p>
+<p>本地将blog下的 .deploy_git 手动删除在一次执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">hexo clean</span><br><span class="line">hexo g</span><br><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+
+<p>即可解决问题。</p>
+<p><strong>blog文章中图片的使用</strong></p>
+<p>我们在编辑 文章的时候使用的软件是 Markdown  我们在博文中插入图片如果只是截图的话，当我们在浏览的时候会发现图片找不到问题是插入图片的路径问题所以我们可以在 <strong>source</strong>下创建文件夹images然后见需要用到的图片放到images下面，然后再文章中使用images下图片的路径 </p>
+<p>例如![alt] (图片路径)</p>
+
+      </div>
+      
+      <footer class="post-footer">
+        
+        <nav class="post-nav"><a class="next" href="/2020/04/20/hello-world/">
+        <span class="next-text nav-default">Hello World</span>
+        <span class="prev-text nav-mobile">Next</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="copyright">
+  <span class="power-by">
+    Powered by <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a>
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    Theme - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2020<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Mzl</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v="></script>
+</body>
+</html>
