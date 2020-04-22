@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="本文中介绍了websocket和swoole结合使用实现服务端向客户端主动推送消息的功能，文中逐步解释了代码在实现过程中的含义，以及swoole心跳检测是如何使用的"/><meta name="keywords" content="swoole, websocket, 服务端主动推送消息, 从入门到删除数据库" /><link rel="alternate" href="/default" title="从入门到删除数据库"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="https://menzhaolis.github.io/2020/04/22/php-swoole-websocket实现服务端主动向客户端推送消息/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":false};
+</script>
+
+    <title>php+swoole+websocket实现服务端主动向客户端推送消息 - 从入门到删除数据库</title>
+  <meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">从入门到删除数据库</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">首页
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">归档
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签
+          </li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">从入门到删除数据库</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            首页
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            归档
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            标签
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            分类
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            关于
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">php+swoole+websocket实现服务端主动向客户端推送消息
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2020-04-22
+        </span></div>
+    </header>
+
+    <div class="post-content"><p><strong>写代码前的思考</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">1、websocket协议是什么？能解决什么问题？</span><br><span class="line">2、为什么选择websocket和swoole？</span><br><span class="line">3、swoole是什么？</span><br></pre></td></tr></table></figure>
+
+<p><strong>简单介绍</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">websocket：WebSocket是HTML5下一种新的协议。它实现了浏览器与服务器全双工通信，能更好的节省服务器资源和带宽并达到实时通讯的目的。</span><br><span class="line">swoole：完美的实现了PHP的异步、并行、高性能网络通信引擎，支持TCP长连接，Websocket，Mqtt等协议</span><br><span class="line">我们在了解了websocket和swoole的作用之后很明显的 就能得出问题2的答案</span><br></pre></td></tr></table></figure>
+
+ <a id="more"></a> 
+
+<p><strong>websocket知识点</strong></p>
+<p>下面我们来介绍一下常用的不可获取的方法</p>
+<p><strong>1、var ws = new WebSocket(“ws://ip地址:端口”);</strong><br>很明显这是实例化websocket的类这是必须的，如果我们不实例化这个类，那么我们如何在下面使用类中不可或缺的方法呢<br><strong>2、ws.onopen = function()</strong><br>  {<br>      // Web Socket 已连接上，使用 send() 方法发送数据<br>      ws.send(“发送数据”);<br>      alert(“数据发送中…”);<br>  };</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ws.onopen()事件见名知意这是打开一个链接，链接的主机就是我们刚才在new WebSocket(&quot;ws:&#x2F;&#x2F;ip地址:端口&quot;)中填写的ip</span><br><span class="line">onopen事件在服务器响应了websocket连接后就会触发</span><br><span class="line"></span><br><span class="line">ws.send()方法就是向服务端发送数据，当然这个数据可以包含很多信息比如userid、name等</span><br><span class="line"></span><br><span class="line">向服务端发送数据还有一种方式我们可以理解为get方式就是在new WebSocket(&quot;ws:&#x2F;&#x2F;ip地址:端口?uid&#x3D;1&amp;name&#x3D;张三&quot;)直接将参数拼接在地址后面</span><br><span class="line">send()触发实在open之后，open完成后证明链接已经建立这个时候可以调用send来向服务端发送消息</span><br></pre></td></tr></table></figure>
+
+<p><strong>3、ws.onmessage = function (evt)</strong></p>
+<p>{<br>    var received_msg = evt.data;<br>    alert(“数据已接收…”);<br>};</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">onmessage接收服务端返回的数据，其实这个就和jq中的回调函数的处理很相似了，服务端如果有消息返回就会触发，我们同样可以在这个方法内进行消息的渲染啊等一系列的处理</span><br></pre></td></tr></table></figure>
+
+<p><strong>4、ws.onclose = function()</strong></p>
+<p>{<br>      // 关闭 websocket<br>       alert(“连接已关闭…”);<br> };</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">onclose关闭连接，当然也是再关闭链接的时候触发</span><br></pre></td></tr></table></figure>
+
+<p><strong>websocket需要知道的点</strong></p>
+<p>1、每次刷新页面websocket的链接id(fd_id)都是不同的</p>
+<p>2、关闭页面的时候出发onclose 下次在连接的时候fd_id也会变</p>
+<p><strong>Swoole知识点</strong></p>
+<p>当我们看swoole的事件的时候你会发现他的事件和websocket的事件是一一对应的，然而事实也确实是这样的，下面我们来看下具体的事件</p>
+<p> $server = new Swoole\WebSocket\Server(“0.0.0.0”, 9501); </p>
+<p><code>在websocket中，ws如果要是发起一个链接的话需要new一个websocket的类并且声明ip:端口，而在Swoole中我们作为服务端需要允许链接，而Swoole\WebSocket\Server(&quot;0.0.0.0&quot;, 9501)则就是为了完成这一任务</code></p>
+<p>$server-&gt;on(‘open’, function (Swoole\WebSocket\Server $server, $request) </p>
+<p>{   </p>
+<pre><code>echo &quot;server: handshake success with fd{$request-&gt;fd}\n&quot;; </code></pre><p>}); </p>
+<p><code>Swoole中的onopen和websocket中的onopen意义是相同的，只不过我们在这里看到的就是通过websocket链接过来的信息，其中$request-&gt;fd则是查看链接的id，这在我们后面实现消息推送尤为重要</code></p>
+<p>$server-&gt;on(‘message’, function (Swoole\WebSocket\Server $server, $frame) </p>
+<p>{    </p>
+<p>echo “receive from {$frame-&gt;fd}:{$frame-&gt;data},opcode:{$frame-&gt;opcode},fin:{$frame-&gt;finish}\n”;    $server-&gt;push($frame-&gt;fd, “this is server”); </p>
+<p>}); </p>
+<p><code>onmessage接收客户端发送的消息，所以他的触发是使用websocket中的send触发到的而echo则是发送消息的具体内容的打印</code></p>
+<p><code>$server-&gt;push()向客户端推送消息</code></p>
+<p>$server-&gt;on(‘close’, function ($ser, $fd) </p>
+<p>{    </p>
+<p> echo “client {$fd} closed\n”; </p>
+<p>}); </p>
+<p><code>关闭链接</code></p>
+<p>$server-&gt;start(); </p>
+<p><strong>业务场景</strong></p>
+<p>系统中用户存在甲方，乙方，当乙方申请收款，或者甲方批示之后，需要发送通知给对应的接收人</p>
+<p>用到3张表，消息表（message）、用户表(user)、用户与链接的关系表(user_fd)</p>
+<p><strong>具体实现</strong></p>
+<p><strong>前端代码：</strong></p>
+<p>$(function(){</p>
+<p>wsServer = ‘ws://ip:端口’;</p>
+<p><em>如果出现链接失败的情况，查看下服务端防火墙是否放开了该端口</em></p>
+<p>websocket = new WebSocket(wsServer);</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">var uid &#x3D; window.localStorage.getItem(&#39;uid&#39;);</span><br><span class="line">var a &#x3D; &#123;uid:uid，type:1&#125;</span><br><span class="line">var json &#x3D; JSON.stringify(a);</span><br><span class="line">因为消息是有接收人的，而服务端也需要知道将消息推送给谁，所以在用户登录之后我们将用户的id传递到服务端，并且在服务端建立用户和链接的关系,type &#x3D;1 则是消息类型的标识，消息的一对一</span><br><span class="line">websocket.onopen &#x3D; function (evt) &#123;</span><br><span class="line">    console.log(&quot;Connected to WebSocket server.&quot;);</span><br><span class="line">    websocket.send(json) &#x2F;&#x2F;将消息发送到服务端</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 接受服务端发送的消息</span><br><span class="line">websocket.onmessage &#x3D; function (evt) &#123;</span><br><span class="line">    console.log(&#39;Retrieved data from server: &#39; + evt.data);</span><br><span class="line">    &#x2F;&#x2F; 见服务端的消息进行渲染</span><br><span class="line">    fordata(evt)</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>​    websocket.onclose = function (evt) {</p>
+<p>​      console.log(“Disconnected”);</p>
+<p>​    }</p>
+<p>​    websocket.onerror = function (evt, e) {</p>
+<p>​      console.log(‘Error occured: ‘ + evt.data);</p>
+<p>​    };</p>
+<p>  })</p>
+<p><strong>前端效果图</strong></p>
+<p><img src="/images/hexo_github/swoole.png" alt="alt"></p>
+<p><strong>后端代码</strong></p>
+<p>$this-&gt;ws = new \Swoole\WebSocket\Server(“0.0.0.0”, 9502);</p>
+<p>public function handle()</p>
+<p>  {</p>
+<p>​    $this-&gt;ws-&gt;on(‘open’, function($ws, $req) {</p>
+<p>​      // Log::info(‘open–’.$req-&gt;fd);</p>
+<p>​      echo “connection open: {$req-&gt;fd}\n”;</p>
+<p>​    });</p>
+<p>​    $this-&gt;ws-&gt;on(‘message’, function($ws, $frame) {</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$data &#x3D; json_decode($frame-&gt;data,true);</span><br><span class="line">解析客户端传递过来的参数为数组形式，以便下面更好的操作</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&#x2F;&#x2F; 如果没有type则表示全部人员都要接收消息可以理解为系统消息</span><br><span class="line">if(!isset($data[&#39;type&#39;]))</span><br><span class="line">&#123;</span><br><span class="line">    $ids[&#39;uid&#39;] &#x3D; $data[&#39;uid&#39;];</span><br><span class="line">    $ids[&#39;fd_id&#39;] &#x3D; $frame-&gt;fd;</span><br><span class="line">    &#x2F;&#x2F; 定义用户id和链接id的关系并在登录后发送消息</span><br><span class="line">    $relation &#x3D; SendService::sendMessage($ids);----&gt;具体的业务实现根据自己的业务具体编写哈，我这里做的就是将如果user_fd中已经存在改用的关系那么则更新fd_id并且查询对应这个uid的message表中status&#x3D;0(未读)</span><br><span class="line">    &#x2F;&#x2F; 如果存在需要推送的消息则进行推送</span><br><span class="line">    if($relation !&#x3D; 0)</span><br><span class="line">    &#123;</span><br><span class="line">    	&#x2F;&#x2F; 按照对应的链接id进行推送</span><br><span class="line">        $ws-&gt;push($frame-&gt;fd, json_encode($relation));</span><br><span class="line">        return ;</span><br><span class="line">    &#125;</span><br><span class="line">	return ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">if(isset($data[&#39;type&#39;]) &amp;&amp; $data[&#39;type&#39;]&#x3D;&#x3D;1)</span><br><span class="line">&#123;</span><br><span class="line">    &#x2F;&#x2F; 用户登录状态下推送消息</span><br><span class="line">    $relation &#x3D; OnlySendService::sendMessage($data);--&gt;中运行的逻辑将uid和fd_id的关系进行绑定，如果user_fd中已经存在改用的关系那么则更新fd_id</span><br><span class="line">   	然后查询该uid对应的message中未读的消息</span><br><span class="line">    $ws-&gt;push($relation[&#39;fd_id&#39;], json_encode($relation[&#39;message&#39;]));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$this-&gt;ws-&gt;on(&#39;close&#39;, function($ws, $fd) &#123;</span><br><span class="line">	UserFd::where(&#39;fd_id&#39;,$fd)-&gt;update([&#39;status&#39;&#x3D;&gt;1]);</span><br><span class="line">	&#x2F;&#x2F; 在用户离开或者关闭连接或者客户端长时间没有反应的时候应该关闭链接并且修改链接的状态</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<p> <strong>敲黑板、划重点，心跳检测</strong></p>
+<p>为什么做心跳检测，我们在使用长连接的时候需要其实并不是需要连接一直在连着，当客户端达到一个时间的限制没有反应的时候我们默认的认为他已经关闭了链接，为了实现这种检测swoole提供给我们心跳检测，相当的简单</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$this-&gt;ws-&gt;set(array(</span><br><span class="line">    &#x2F;&#x2F; 每五秒 侦测一次心跳</span><br><span class="line">    &#39;heartbeat_check_interval&#39; &#x3D;&gt; 120,</span><br><span class="line">    &#x2F;&#x2F; 如果一个连接在10秒内没有向服务端发送消息将会被切断</span><br><span class="line">    &#39;heartbeat_idle_time&#39; &#x3D;&gt; 250,</span><br><span class="line">));</span><br></pre></td></tr></table></figure>
+
+<p>​    $this-&gt;ws-&gt;start();</p>
+<p>  }</p>
+<p><em>至此我们就能实现服务端主动向客户端推送消息了</em></p>
+
+      </div>
+      
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/swoole/">swoole</a>
+            <a href="/tags/websocket/">websocket</a>
+            <a href="/tags/%E6%9C%8D%E5%8A%A1%E7%AB%AF%E4%B8%BB%E5%8A%A8%E6%8E%A8%E9%80%81%E6%B6%88%E6%81%AF/">服务端主动推送消息</a>
+            </div>
+        
+        <nav class="post-nav"><a class="next" href="/2020/04/21/hexo-github%E6%90%AD%E5%BB%BA%E9%9D%99%E6%80%81blog-%E6%9B%B4%E6%8D%A2%E4%B8%BB%E9%A2%98/">
+        <span class="next-text nav-default">hexo+github搭建静态blog+更换主题</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:1912882425@qq.com" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/ahonn" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2015 - 2020<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Mzl</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>
