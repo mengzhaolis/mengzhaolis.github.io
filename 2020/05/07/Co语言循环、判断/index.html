@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="本文中介绍了for、switch、if、if..else等常用的在处理业务逻辑中不可避免的语句，包括我们在循环中嵌套判断，在循环中处理数据"/><meta name="keywords" content="for, if, if..else, switch, 从入门到删除数据库" /><link rel="alternate" href="/default" title="从入门到删除数据库"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="https://menzhaolis.github.io/2020/05/07/Co语言循环、判断/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":false};
+</script>
+
+    <title>Co语言循环、判断 - 从入门到删除数据库</title>
+  <meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">从入门到删除数据库</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">首页
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">归档
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签
+          </li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">从入门到删除数据库</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            首页
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            归档
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            标签
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            分类
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            关于
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">Co语言循环、判断
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2020-05-07
+        </span></div>
+    </header>
+
+    <div class="post-content"><p><strong>写在前面</strong></p>
+<p>在进入正题之前，我们需要了解以下内容：</p>
+<p>1、关键字 <strong><em>range</em></strong> 用户for循环中迭代数组、切片、通道或者集合的元素，在数组和切片中它返回元素的索引和索引对应的值，在集合中返回key-value对</p>
+<p>2、打印使用的函数  <strong><em>fmt.PrintIn()</em></strong>、<strong><em>fmt.PrintF()</em></strong>、 <strong><em>fmt.Sprintf</em></strong> </p>
+<p><strong><em>fmt.PrintIn(): 可以打印字符串、变量、数组</em></strong></p>
+<p><strong><em>fmt.PrintF()：只可以打印出格式化的字符串，可以输出字符串类型的变量，不可以输出整形变量和整形</em></strong></p>
+<p><strong><em>fmt.Sprintf()：用传入的格式化规则符将传入的变量格式化，返回格式化后的字符串</em></strong></p>
+<p>其实说白了就是，当我们需要打印一些拼接变量的字符串的时候就可以用<strong><em>fmt.PrintF()</em></strong></p>
+ <a id="more"></a> 
+
+<p><strong>Go语言循环</strong></p>
+<p>在Go语言中for循环总共有三种形式</p>
+<p><strong>1、使用分号，比如：</strong></p>
+<p><strong>for int; condition; post{}</strong></p>
+<p><strong>int:</strong> 一般为赋值表达式，比如控制变量赋初值</p>
+<p><strong>condition:</strong> 关系表达式或者逻辑表达式，循环控制条件</p>
+<p><strong>post:</strong> 一般为赋值表达式，控制变量的增加或减少</p>
+<p>例如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">func main()&#123;</span><br><span class="line">    sum :&#x3D; 0</span><br><span class="line">    for i :&#x3D; 0; i &lt;&#x3D; 10; i++ &#123;</span><br><span class="line">        sum +&#x3D; i</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(sum)</span><br><span class="line">&#125;</span><br><span class="line">输出结果：55</span><br></pre></td></tr></table></figure>
+
+<p><strong>2、类似于while</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for sum &lt;&#x3D; 10&#123;</span><br><span class="line">   sum +&#x3D; sum</span><br><span class="line">&#125;</span><br><span class="line">fmt.Println(sum) </span><br><span class="line">输出结果为：16</span><br></pre></td></tr></table></figure>
+
+<p><strong>3、for循环，没有条件</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">func main() &#123;</span><br><span class="line">    sum :&#x3D; 0</span><br><span class="line">    for &#123;</span><br><span class="line">    sum++ &#x2F;&#x2F; 无限循环下去</span><br><span class="line">    &#125;</span><br><span class="line">    fmt.Println(sum) &#x2F;&#x2F; 无法输出</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>控制循环体内容</strong></p>
+<p><strong><em>break：</em></strong> 经常用于中断当前 for 循环或跳出 switch 语句 也就是说跳出循环，不在进行循环内的程序了</p>
+<p><strong><em>continue：</em></strong> 跳过当前循环的剩余语句，然后继续进行下一轮循环 </p>
+<p><strong><em>goto：</em></strong> 将控制转移到被标记的语句 </p>
+<p><strong>if、if…else判断</strong></p>
+<p>这两个语句和其他语言没有什么本质的区别，只不过是写法略有不同而已比如</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">if a &lt; 20 &#123;</span><br><span class="line">      &#x2F;* 如果条件为 true 则执行以下语句 *&#x2F;</span><br><span class="line">      fmt.Printf(&quot;a 小于 20\n&quot; );</span><br><span class="line">   &#125; else &#123;</span><br><span class="line">      &#x2F;* 如果条件为 false 则执行以下语句 *&#x2F;</span><br><span class="line">      fmt.Printf(&quot;a 不小于 20\n&quot; );</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>switch判断</strong></p>
+<p>switch 语句用于基于不同条件执行不同动作，每一个 case 分支都是唯一的，从上至下逐一测试，直到匹配为止。</p>
+<p>switch 语句执行的过程从上至下，直到找到匹配项，匹配项后面也不需要再加 break。</p>
+<p>switch 默认情况下 case 最后自带 break 语句，匹配成功后就不会执行其他 case，如果我们需要执行后面的 case，可以使用 <strong>fallthrough</strong></p>
+<p><strong><em>但是需要注意的是，每一个case value值得类型必须是一致的</em></strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">switch var1 &#123;</span><br><span class="line">    case val1:</span><br><span class="line">        ...</span><br><span class="line">    case val2:</span><br><span class="line">        ...</span><br><span class="line">    default:</span><br><span class="line">        ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>fallthrough</strong></p>
+<p> 使用 fallthrough 会强制执行后面的 case 语句，fallthrough 不会判断下一条 case 的表达式结果是否为 true </p>
+
+      </div>
+      
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/for/">for</a>
+            <a href="/tags/if/">if</a>
+            <a href="/tags/if-else/">if..else</a>
+            <a href="/tags/switch/">switch</a>
+            </div>
+        
+        <nav class="post-nav"><a class="next" href="/2020/05/06/php%E6%8B%93%E5%B1%95golang%E7%AC%AC%E4%B8%80%E7%AB%A0Go%E5%8F%98%E9%87%8F%E3%80%81%E5%B8%B8%E9%87%8F%E3%80%81%E8%BF%90%E7%AE%97%E7%AC%A6/">
+        <span class="next-text nav-default">php拓展golang第一章Go变量、常量、运算符</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:1912882425@qq.com" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/ahonn" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2015 - 2020<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Mzl</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>
