@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="本文中介绍了docker安装以及docker的基础命令，以及docker的基础使用"/><meta name="keywords" content="docker, 从入门到删除数据库" /><link rel="alternate" href="/default" title="从入门到删除数据库"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="https://menzhaolis.github.io/2020/06/11/docker安装以及基础使用/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":false};
+</script>
+
+    <title>docker安装以及基础使用 - 从入门到删除数据库</title>
+  <meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">从入门到删除数据库</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">首页
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">归档
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签
+          </li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">从入门到删除数据库</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            首页
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            归档
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            标签
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            分类
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            关于
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">docker安装以及基础使用
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2020-06-11
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#docker安装"><span class="toc-text">docker安装</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#docker启动并设置开机自启"><span class="toc-text">docker启动并设置开机自启</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#docker-术语"><span class="toc-text">docker 术语</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#什么是镜像？"><span class="toc-text">什么是镜像？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#dockerfile"><span class="toc-text">dockerfile</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#volume容器持久化存储"><span class="toc-text">volume容器持久化存储</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#检测是否持久更改"><span class="toc-text">检测是否持久更改</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#创建仅有数据的容器，并简单实现容器之间的挂载"><span class="toc-text">创建仅有数据的容器，并简单实现容器之间的挂载</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#registry-仓库"><span class="toc-text">registry(仓库)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#registry常用命令"><span class="toc-text">registry常用命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#docker容器编排工具docker-compose"><span class="toc-text">docker容器编排工具docker-compose</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#静态页面docker部署与docker-compose部署"><span class="toc-text">静态页面docker部署与docker-compose部署</span></a></li></ol>
+    </div>
+  </div><div class="post-content"><h4 id="docker安装"><a href="#docker安装" class="headerlink" title="docker安装"></a>docker安装</h4><p>首先在官方文档上docker对于centos存在版本的要求，Docker 需要安装在 64 位的平台，并且内核版本不低于 3.10。 CentOS 7 满足最低 内核的要求，但由于内核版本比较低，部分功能（如 overlay2 存储层驱动）无 法使用，并且部分功能可能不太稳定</p>
+<a id="more"></a> 
+
+<p><strong>所以我们需要查看自己机器的centos的版本和内核，可以执行命令如下</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uname -a 或者执行 uname -r</span><br></pre></td></tr></table></figure>
+
+<p><strong>执行结果</strong></p>
+<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5Cdocker%E5%AE%89%E8%A3%85%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%5C1.png" alt></p>
+<p><strong>查看centos版本执行命令</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat &#x2F;etc&#x2F;redhat-release</span><br></pre></td></tr></table></figure>
+
+<p><strong>执行结果</strong></p>
+<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5Cdocker%E5%AE%89%E8%A3%85%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%5C2.png" alt></p>
+<p>查看内核版本和centos版本信息之后我们可以步入正题，安装<strong>docker</strong></p>
+<p>安装docker也是很简单的只需要一行命令搞定</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo wget -qO- https:&#x2F;&#x2F;get.docker.com&#x2F; | sh</span><br></pre></td></tr></table></figure>
+
+<p>命令执行完成之后你会看到如下提示</p>
+<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5Cdocker%E5%AE%89%E8%A3%85%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%5C3.png" alt></p>
+<p>这个提示的意思呢就是需要我们像docker用户组中添加用户，因为docker只能是root用户权限才能使用，那么我们将某一个用户添加进docker用户组，这样的话该用户直接就可以操作docker了</p>
+<p>至此docker就安装完成了，可以使用 <strong>docker –version</strong>    查看我们安装的docker的版本</p>
+<h4 id="docker启动并设置开机自启"><a href="#docker启动并设置开机自启" class="headerlink" title="docker启动并设置开机自启"></a>docker启动并设置开机自启</h4><p>基本操作无需多言，两行命令奉上，复制-粘贴敲回车</p>
+<p>docker启动：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl start docker</span><br></pre></td></tr></table></figure>
+
+<p>docker设置开机启动：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl enable docker</span><br></pre></td></tr></table></figure>
+
+<p>至此那就不能不提一下个人对于docker的理解了，官方对于docker的解释很强大，但是我个人理解的docker就是一个虚拟机，只不过这个虚拟机更加轻便，因为他没有自己的内核，也不需要进行硬件的虚拟，她所使用的全部的都是使用的宿主机，也就是我的Linux系统</p>
+<h4 id="docker-术语"><a href="#docker-术语" class="headerlink" title="docker 术语"></a>docker 术语</h4><table>
+<thead>
+<tr>
+<th align="center">名称</th>
+<th align="center">含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">host</td>
+<td align="center">宿主机</td>
+</tr>
+<tr>
+<td align="center">image</td>
+<td align="center">镜像</td>
+</tr>
+<tr>
+<td align="center">container</td>
+<td align="center">容器</td>
+</tr>
+<tr>
+<td align="center">registry</td>
+<td align="center">仓库</td>
+</tr>
+<tr>
+<td align="center">daemon</td>
+<td align="center">守护进程</td>
+</tr>
+<tr>
+<td align="center">client</td>
+<td align="center">客户端</td>
+</tr>
+</tbody></table>
+<p>如果你了解过docker那么你肯定不陌生docker提出的三个概念，<strong>容器、镜像、仓库</strong></p>
+<p><strong>什么是容器</strong>？执行命令 docker run -it ubuntu /bin/bash就启动了一个基于ubuntu的容器，这个时候我们可以通过<strong>docker ps</strong>查看容器的信息，如果使用docker run nginx那么就是一个基于nginx的容易，所以，结论就是，容器是由<strong>docker run  xxx来启动的。那么这个xxx就是下面要说的镜像</strong></p>
+<p><strong>需要注意的是，在容器内的任何改变都是临时的，如果你想要持续的保持改变需要做持久化处理</strong></p>
+<p>容器内改变持久化处理使用命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker commit -m &#39;描述(最好使用英文)&#39; 容器id 镜像名字</span><br></pre></td></tr></table></figure>
+
+<p>该命令返回一个新的镜像id</p>
+<h4 id="什么是镜像？"><a href="#什么是镜像？" class="headerlink" title="什么是镜像？"></a>什么是镜像？</h4><p>docker镜像相当于一个root文件系统， 镜像不包含任何动态数据，其内容在构建之后也不会改变</p>
+<h4 id="dockerfile"><a href="#dockerfile" class="headerlink" title="dockerfile"></a>dockerfile</h4><p> dockerfile是什么？在上文中我们新生成一个镜像使用的是docker commit -m ‘描述’ 但是这种方式并不是最好的，我们在使用docker进行项目部署的时候不可避免的会接触一个新的生成镜像的方式就是dockerfile</p>
+<p><strong>创建一个简单的dockerfile</strong></p>
+<p>首先使用 touch Dockerfile 创建一个dockerfile文件这里可以使用别的名字，但是最好是使用Dockerfile命名，创建文件之后使用编辑器打开并键入</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">FROM alpine:latest</span><br><span class="line"></span><br><span class="line">MAINTAINER MZL			&#x2F;&#x2F; 声明作者</span><br><span class="line"></span><br><span class="line">CMD echo &quot;hello docker&quot;	&#x2F;&#x2F; 要执行的命令</span><br></pre></td></tr></table></figure>
+
+<p>保存后使用    <strong>docker build -t hello_doker .</strong></p>
+<p>-t: 意为 标签 镜像名称</p>
+<p><strong>.</strong> : 意为此路径下所有的都由docker处理</p>
+<p>执行后结果如图</p>
+<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5Cdocker%E5%AE%89%E8%A3%85%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%5C4.png" alt></p>
+<p>测试镜像是否成功执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run hello_docker</span><br></pre></td></tr></table></figure>
+
+<h4 id="volume容器持久化存储"><a href="#volume容器持久化存储" class="headerlink" title="volume容器持久化存储"></a>volume容器持久化存储</h4><p>首先基于nginx启动一个容器，使用命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d --name hello_docker -v &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html nginx</span><br></pre></td></tr></table></figure>
+
+<p> 把当前目录下的一个目录映射到容器中执行命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d $PWD&#x2F;html:--name nginx1 -v &#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html nginx</span><br></pre></td></tr></table></figure>
+
+<p><strong>-d:</strong> 后台运行容器，并返回容器ID </p>
+<p><strong>–name</strong> : 定义一个名字</p>
+<p><strong>-v</strong> :  挂载一个卷，后面的路径是声明绑定挂在的目录</p>
+<p><strong>/usr/share/nginx/html</strong> ：nginx镜像加载html/网页 的路径</p>
+<p><strong>$PWD</strong> : shell的环境变量，指当前目录</p>
+<p>然后执行命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker inspect hello_docker</span><br></pre></td></tr></table></figure>
+
+<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5Cdocker%E5%AE%89%E8%A3%85%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%5C5.png" alt></p>
+<p>命令的含义是检查，执行命令之后可以看到很多信息，主要信息如上图，在Mounts模块下可以看到宿主机地址映射到了容器内的挂载地址 /usr/share/nginx/html</p>
+<p>删除所有未启动的容器  docker container prune </p>
+<h4 id="检测是否持久更改"><a href="#检测是否持久更改" class="headerlink" title="检测是否持久更改"></a>检测是否持久更改</h4><p>在上图中我们可以看到本机的代码的地址在../../../_data下，我们可以进入到该目录下，查看某一个文件，并在该文件上做出更改，比如在该目录下的index.html中做出更改，做出更改后保存</p>
+<p>然后我们进入nginx对应的容器，查看/usr/share/nginx/html下的index.html，就会看到刚刚的更改</p>
+<p>进入容器命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it 容器id &#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
+
+<h4 id="创建仅有数据的容器，并简单实现容器之间的挂载"><a href="#创建仅有数据的容器，并简单实现容器之间的挂载" class="headerlink" title="创建仅有数据的容器，并简单实现容器之间的挂载"></a>创建仅有数据的容器，并简单实现容器之间的挂载</h4><p>首先创建一个仅用来提供数据的容器</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker create -v $PWD&#x2F;data:&#x2F;var&#x2F;mydata --name data_container ubuntu</span><br></pre></td></tr></table></figure>
+
+<p>创建一个新的容器并加载到刚刚创建的数据容器 data_container中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -it --volumes-from data_container &#x2F;bin&#x2F;bash</span><br></pre></td></tr></table></figure>
+
+<p>执行该命令后进入到该容器，这个时候我们可以执行 <strong>mount</strong> 查看路径</p>
+<p>接下来我们进入刚刚指定的映射地址 /var/mydata </p>
+<p>第一步：在该目录下 创建一个文件(随便的一个文件比如data.text)</p>
+<p>第二步：使用 <strong>exit</strong> 推出该容器并切换到，创建数据容器的本地地址也就是上文中提到的 <strong>$PWD/data</strong> 切换到该目录下执行 ls 即可看到在容器中创建的 data.text</p>
+<p><strong>这样也就是说明这个数据卷的挂载是成功的，同理的这个数据容器可以被多个容器进行挂载，这样就可以实现简单的数据共享</strong></p>
+<h4 id="registry-仓库"><a href="#registry-仓库" class="headerlink" title="registry(仓库)"></a>registry(仓库)</h4><p>仓库的概念大家第一反应可能是git 或者svn 我认为他们本质上是相同的，git或svn管理的是我们自己的项目，而registry则是docker镜像的一个库，库的本质是相同的，只不过内容不同，我们看下registry的常用命令就会有更深的感触</p>
+<h4 id="registry常用命令"><a href="#registry常用命令" class="headerlink" title="registry常用命令"></a>registry常用命令</h4><p>docker search xxx    (xxx=镜像名称)                            在仓库中搜索xxx镜像</p>
+<p>docker pull xxx        (xxx=镜像名称)                              在仓库中拉去该镜像</p>
+<p>docker push myname/xxx                                            将自己制作的镜像推送到仓库</p>
+<h4 id="docker容器编排工具docker-compose"><a href="#docker容器编排工具docker-compose" class="headerlink" title="docker容器编排工具docker-compose"></a>docker容器编排工具docker-compose</h4><p><strong>Linux下安装docker-compose</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -L https:&#x2F;&#x2F;github.com&#x2F;docker&#x2F;compose&#x2F;releases&#x2F;download&#x2F;1.9.0&#x2F;docker-compose-$(uname -s)-$(uname -m) &gt; &#x2F;usr&#x2F;local&#x2F;bin&#x2F;docker-compose</span><br></pre></td></tr></table></figure>
+
+<p>uname -s：返回操作系统</p>
+<p>uname -m: 返回系统版本</p>
+<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5Cdocker%E5%AE%89%E8%A3%85%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%5C6.png" alt></p>
+<p>此命令下载二进制docker-compose，下载后继续执行</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod a+x &#x2F;usr&#x2F;local&#x2F;bin&#x2F;docker-compose</span><br></pre></td></tr></table></figure>
+
+<p>a+x：所有人都可以执行</p>
+<p>测试docker-compose是否安装成功，执行命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker --version</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="静态页面docker部署与docker-compose部署"><a href="#静态页面docker部署与docker-compose部署" class="headerlink" title="静态页面docker部署与docker-compose部署"></a>静态页面docker部署与docker-compose部署</h4><p>docker部署只需要一行命令就可以，我们只需要将宿主机上的页面地址挂载到容器内的nginx的html文件夹下就可以</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run --name shucai -p 8080:80 -v &#x2F;www&#x2F;wwwroot&#x2F;shucai&#x2F;html:&#x2F;usr&#x2F;share&#x2F;nginx&#x2F;html -d nginx</span><br></pre></td></tr></table></figure>
+
+<p>-p：端口映射</p>
+<p>-v：挂载一个卷</p>
+<p>-d：后台运行容器</p>
+<p>执行命令之后可以通过命令 <strong>docker ps</strong> 查看正在运行的容器</p>
+<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5Cdocker%E5%AE%89%E8%A3%85%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%5C7.png" alt></p>
+<p>由上图可知，我们的容器运行成功了，然后就可以去浏览器以 ip地址:8080去看自己的页面了</p>
+<p><strong>docker-compose部署</strong></p>
+<p>首先我们需要在自己的项目中创建一个<strong>Dockerfile文件</strong>，作为镜像，其中内容不再一 一赘述创建好Dockerfile文件后，我们开始定义<strong>docker-compose.yml</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">version: &#39;2&#39;</span><br><span class="line"></span><br><span class="line">networks:</span><br><span class="line"> shucai:</span><br><span class="line">services:</span><br><span class="line"> shucai:</span><br><span class="line">   build: shucai</span><br><span class="line">   networks:</span><br><span class="line">     - shucai</span><br><span class="line">   ports:</span><br><span class="line">     - &quot;8080:80&quot;</span><br><span class="line">  nginx:</span><br><span class="line">    build: nginx</span><br><span class="line">    networks:</span><br><span class="line">       - shucai</span><br><span class="line">    ports:</span><br><span class="line">       - &quot;80:80&quot;</span><br><span class="line">    depends_on:</span><br><span class="line">       - shucai</span><br></pre></td></tr></table></figure>
+
+<p>version：声明使用docker-compose版本</p>
+<p>networks：声明一个网络</p>
+<p>services：服务</p>
+<p>service-&gt;build：声明build的路径</p>
+<p>service-&gt;networks：加入刚声明的网络</p>
+<p>service-&gt;ports：声明监听的端口</p>
+<p>定义好docker-compose之后再当前目录下执行命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker-compose up -d</span><br></pre></td></tr></table></figure>
+
+<p><strong>问题一：</strong></p>
+<p>报错如下</p>
+<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5Cdocker%E5%AE%89%E8%A3%85%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%5C8.png" alt></p>
+<p>报错说不能映射，<strong>问题的原因是yml严格的格式，yml规定每个：或者是 - 后面必须有空格</strong>所以我们检查下文件的格式</p>
+<p><strong>问题二：</strong></p>
+<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5Cdocker%E5%AE%89%E8%A3%85%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8%5C9.png" alt></p>
+<p>出现这个问题的原因的也是因为在docker-compose.yml格式问题，文件中的内容没有对齐</p>
+<p><strong>问题三：</strong></p>
+<p>报错<strong>ERROR: No build stage in current context</strong>  提示说当前上下文没有生成</p>
+<p>造成这个问题的原因是因为在我们的<strong>dockerfile</strong>没有<strong>FROM</strong>导致的</p>
+
+      </div>
+      
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/docker/">docker</a>
+            </div>
+        
+        <nav class="post-nav"><a class="next" href="/2020/05/08/Golang%E6%A1%86%E6%9E%B6%E4%B9%8B%E4%B8%80beego%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/">
+        <span class="next-text nav-default">Golang框架之一beego基本操作</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:1912882425@qq.com" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/ahonn" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2015 - 2020<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Mzl</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>
