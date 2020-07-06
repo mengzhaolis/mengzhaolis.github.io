@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="MySQL45讲观后总结归纳，记录下自己的感悟"/><meta name="keywords" content="MySQL, 从入门到删除数据库" /><link rel="alternate" href="/default" title="从入门到删除数据库"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="https://menzhaolis.github.io/2020/07/06/MySQL归纳总结/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":false};
+</script>
+
+    <title>MySQL归纳总结 - 从入门到删除数据库</title>
+  <meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">从入门到删除数据库</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">首页
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">归档
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签
+          </li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">从入门到删除数据库</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            首页
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            归档
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            标签
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            分类
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            关于
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">MySQL归纳总结
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2020-07-06
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#第一讲一条SQL查询是如何执行的？"><span class="toc-text">第一讲一条SQL查询是如何执行的？</span></a></li></ol>
+    </div>
+  </div><div class="post-content"><h4 id="第一讲一条SQL查询是如何执行的？"><a href="#第一讲一条SQL查询是如何执行的？" class="headerlink" title="第一讲一条SQL查询是如何执行的？"></a>第一讲一条SQL查询是如何执行的？</h4><p><strong>问在开篇：</strong></p>
+<p>​    1、MySQL的基础架构是什么？</p>
+<p>​    2、一条查询sql语句执行后，返回查询结果，MySQL的内部经历了什么？</p>
+ <a id="more"></a> 
+
+<p><strong>一、MySQL基础架构</strong></p>
+<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5CMySQL%E5%BD%92%E7%BA%B3%E6%80%BB%E7%BB%93%5C0.png" alt></p>
+<p>由上图可见MySQL的基础架构可以归类为三层，<strong>第一层客户端、第二层server层、第三层存储引擎层</strong> 明白了这些之后，需要考虑的就是每一层具体的含义，也就是说每一层要做的工作有哪些</p>
+<p><strong>客户端&amp;&amp;连接器</strong>：要想搞清楚一条查询sql如何执行的那么必然条件就是需要连接数据库，而客户端和连接器则就是为了让我们更好的操作数据库的连接</p>
+<p><strong>Server层</strong>：从图上可知，server层包含了很多东西如连接器、MySQL缓存、分析器、优化器、执行器等，但是这并不是他的全部，server包含了MySQL的所有的内置函数(时间、日期、加密函数等)，所有的跨存储引擎的功能都在这一层当中，所以一条查询语句的执行过程必然在server中可以找到 答案</p>
+<p><strong>存储引擎层</strong>：这一层就很容易理解了，这就是MySQL存储和提取数据的地方，也可以把他理解为数据的仓库，存储引擎我们并不陌生，如InnoDB、MyISAM</p>
+<p><strong>由此我们就可以大概的清楚MySQL的基础架构，这对我们下面思考的问题有决定性的帮助</strong></p>
+<p><strong>二、一条查询的sql执行的过程之”五步成诗”</strong></p>
+<p>示例语句：select * from T where pid = 10;</p>
+<p><strong>第一步：建立连接</strong></p>
+<p>上文中我们提到了server中的内容，并且解释了连接器的作用就是为了连接客户端，并且获取当前用户的权限，如果你看过MySQL中的user表你觉得不会陌生权限是什么</p>
+<p><strong>第二步：查询缓存有无</strong></p>
+<p>当我们和数据库建立连接之后，我们键入一条查询的sql，这个时候MySQL会像我们经手的项目一样，首先到缓存中看看这条语句有没有被执行过，如果有的话则直接返回结果，如果没有的则进行下一步但是在执行完整个过程之后结果还是会被放到缓存中的，也就是说缓存中存放的是你所有的查询语句的<strong>key-value</strong>，在MySQL中缓存同样以<strong>key-value</strong>的形式存在</p>
+<p><strong>key：</strong>查询的sql语句            <strong>value：</strong>查询结果</p>
+<p><strong>衍生问题一：为什么不大量的使用查询缓存</strong></p>
+<p>在第二步中介绍了MySQL查询语句执行会先查询缓存，那么你一定会有一个问题，为什么不大量的使用缓存来提升效率？<strong>根本原因在于缓存的生存周期问题</strong> 就像我们的项目中的缓存一样，他不是永久有效的，他是有生命周期的，除非我们做的静态缓存，不会有数据上的改变，但是MySQL中缓存的失效更加容易，MySQL中的缓存失效非常的频繁，只要该表存在更新，那么该表上的所有查询缓存都会失效，这样的话，我们如果大量的使用缓存反而降低了效率</p>
+<p><strong>第三步：分析器</strong>–词法分析，语法分析</p>
+<p>这一步就是承接上文中提到的，一条查询sql没有在缓存中找到对应的结果之后要执行的，在这一步中，首先要做的就是词法分析，MySQL先将关键词过滤出来，也就是说要识别出查询哪张表，哪一行的数据，然后再进行语法分析</p>
+<p><strong>语法分析：</strong>我们在实际的应用中遇到的sql错误都是在分析器中发生的，比如select少个t 或者是查询的字段不在要查的表中，这些报错都是经过语法分析之后返回给我的错误信息，所以在查询的时候的错误，其实并没有到实际的数据上</p>
+<p><strong>第四步：优化器</strong></p>
+<p>在查询的sql没有任何问题的情况下，MySQL会通过优化器来优化你的sql ，这其中包含了应该使用哪一个索引，join的时候应该先查谁，在查谁，而我们在面试的过程中经常会被问道，MySQL的优化方案，涉及到业务上的也就是写一个优雅的sql语句了，sql语句优雅了，那么优化器就更好的执行，这样不失为一种提升效率的办法</p>
+<p><strong>第五步：执行器</strong></p>
+<p>顾名思义，执行器就是执行我们键入的查询sql，但是他在执行之前还是会先判断一下你有没有对这个表的查询权限，如果没有的话则直接返回没有权限。</p>
+<p><strong>有无索引：</strong>比如我们的查询语句如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select * from T where pid &#x3D; 10</span><br></pre></td></tr></table></figure>
+
+<p><strong>没有索引的情况下</strong></p>
+<p>取这个表的第一行然后 判断id是否等于10，如果是存到结果集中，如果不是则跳过，然后再取下一行，在进行判断，知道这个表的最后一行，然后执行器将上述中过程中的所有满足条件的数据返回给客户端，也就是我们看到的符合条件的结果集</p>
+<p><strong>有索引的情况下</strong></p>
+<p>取满足条件的第一行，然后再取满足条件的第二行，知道最后一个满足条件的数据，然后执行器会将该过程中的所有数据返回个客户端</p>
+<p><strong>这也是为什么说索引可以提升查询效率，但是索引也有自己的使用原则，后续接着探讨</strong></p>
+<p><strong>问在最后</strong></p>
+<p>MySQL连接器建立的连接是一只保持连接状态吗？</p>
+<p>答案当然不是，MySQL连接器建立的连接分为长连接，短链接，短链接就是执行几次查询之后就断开了，需要再次重连，长连接就是当客户端持续有操作的时候一直保持链接状态，有点像websocket，但是客户端长时间没有反应的话也是会断开的默认时间是8小时，可以通过参数wait_timeout来指定时长</p>
+<p>但是如果都使用长连接的话会造成内存使用的特别快的问题，因为MySQL在查询过程中临时使用的内存管理实在链接对象中的，只有断开的时候才会清除，这样长时间的会就会造成服务被系统强行杀死</p>
+
+      </div>
+      
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/MySQL/">MySQL</a>
+            </div>
+        
+        <nav class="post-nav"><a class="next" href="/2020/06/11/docker%E5%AE%89%E8%A3%85%E4%BB%A5%E5%8F%8A%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/">
+        <span class="next-text nav-default">docker安装以及基础使用</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:1912882425@qq.com" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/ahonn" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2015 - 2020<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Mzl</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>
