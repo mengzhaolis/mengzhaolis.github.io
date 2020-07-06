@@ -126,7 +126,7 @@
  <a id="more"></a> 
 
 <p><strong>一、MySQL基础架构</strong></p>
-<p><img src="/.io//F:%5CPHPTutorial%5CWWW%5Cmengzhaolis.github.io%5Cblog%5Csource_posts%5CMySQL%E5%BD%92%E7%BA%B3%E6%80%BB%E7%BB%93%5C0.png" alt></p>
+<p><img src="/.io//%5CMySQL%E5%BD%92%E7%BA%B3%E6%80%BB%E7%BB%93%5C0.png" alt="alt"></p>
 <p>由上图可见MySQL的基础架构可以归类为三层，<strong>第一层客户端、第二层server层、第三层存储引擎层</strong> 明白了这些之后，需要考虑的就是每一层具体的含义，也就是说每一层要做的工作有哪些</p>
 <p><strong>客户端&amp;&amp;连接器</strong>：要想搞清楚一条查询sql如何执行的那么必然条件就是需要连接数据库，而客户端和连接器则就是为了让我们更好的操作数据库的连接</p>
 <p><strong>Server层</strong>：从图上可知，server层包含了很多东西如连接器、MySQL缓存、分析器、优化器、执行器等，但是这并不是他的全部，server包含了MySQL的所有的内置函数(时间、日期、加密函数等)，所有的跨存储引擎的功能都在这一层当中，所以一条查询语句的执行过程必然在server中可以找到 答案</p>
