@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+  <head><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+<meta name="theme-color" content="#f8f5ec" />
+<meta name="msapplication-navbutton-color" content="#f8f5ec">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="#f8f5ec">
+
+<meta name="description" content="MySQL-update执行过程以及主从同步"/><meta name="keywords" content="主从同步, 从入门到删除数据库" /><link rel="alternate" href="/default" title="从入门到删除数据库"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2.11.0" />
+<link rel="canonical" href="https://menzhaolis.github.io/2020/07/07/MySQL-update执行过程以及主从同步/"/>
+
+<link rel="stylesheet" type="text/css" href="/lib/fancybox/jquery.fancybox.css" />
+<link rel="stylesheet" type="text/css" href="/css/style.css?v=2.11.0" />
+
+<script id="baidu_push">
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+<script>
+  window.config = {"leancloud":{"app_id":null,"app_key":null},"toc":true,"fancybox":true,"pjax":"","latex":false};
+</script>
+
+    <title>MySQL-update执行过程以及主从同步 - 从入门到删除数据库</title>
+  <meta name="generator" content="Hexo 4.2.0"></head>
+
+  <body><div id="mobile-navbar" class="mobile-navbar">
+  <div class="mobile-header-logo">
+    <a href="/." class="logo">从入门到删除数据库</a>
+  </div>
+  <div class="mobile-navbar-icon">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
+
+<nav id="mobile-menu" class="mobile-menu slideout-menu">
+  <ul class="mobile-menu-list"><a href="/">
+        <li class="mobile-menu-item">首页
+          </li>
+      </a><a href="/archives/">
+        <li class="mobile-menu-item">归档
+          </li>
+      </a><a href="/tags/">
+        <li class="mobile-menu-item">标签
+          </li>
+      </a><a href="/categories/">
+        <li class="mobile-menu-item">分类
+          </li>
+      </a><a href="/about/">
+        <li class="mobile-menu-item">关于
+          </li>
+      </a></ul>
+</nav>
+<div class="container" id="mobile-panel">
+      <header id="header" class="header"><div class="logo-wrapper">
+  <a href="/." class="logo">从入门到删除数据库</a>
+</div>
+
+<nav class="site-navbar"><ul id="menu" class="menu"><li class="menu-item">
+          <a class="menu-item-link" href="/">
+            首页
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/archives/">
+            归档
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/tags/">
+            标签
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/categories/">
+            分类
+            </a>
+        </li>
+      <li class="menu-item">
+          <a class="menu-item-link" href="/about/">
+            关于
+            </a>
+        </li>
+      </ul></nav>
+</header>
+
+      <main id="main" class="main">
+        <div class="content-wrapper">
+          <div id="content" class="content"><article class="post">
+    <header class="post-header">
+      <h1 class="post-title">MySQL-update执行过程以及主从同步
+        </h1>
+
+      <div class="post-meta">
+        <span class="post-time">
+          2020-07-07
+        </span></div>
+    </header>
+
+    <div class="post-toc" id="post-toc">
+    <h2 class="post-toc-title">文章目录</h2>
+    <div class="post-toc-content">
+      <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#第一讲一条SQL查询是如何执行的？"><span class="toc-text">第一讲一条SQL查询是如何执行的？</span></a></li></ol>
+    </div>
+  </div><div class="post-content"><h4 id="第一讲一条SQL查询是如何执行的？"><a href="#第一讲一条SQL查询是如何执行的？" class="headerlink" title="第一讲一条SQL查询是如何执行的？"></a>第一讲一条SQL查询是如何执行的？</h4><p><strong>问在开篇：</strong></p>
+<p>​    1、MySQL的基础架构是什么？</p>
+<p>​    2、一条update sql语句执行后，MySQL的内部经历了什么？</p>
+<p>​    3、什么是主从同步，如何做到主从同步，主从会带来什么问题</p>
+ <a id="more"></a> 
+
+<p><strong>一、MySQL基础架构</strong></p>
+<p><img src="/images/mysql/1j-0.png" alt="alt"></p>
+<p>由上图可见MySQL的基础架构可以归类为三层，<strong>第一层客户端、第二层server层、第三层存储引擎层</strong> 明白了这些之后，需要考虑的就是每一层具体的含义，也就是说每一层要做的工作有哪些</p>
+<p>具体的解释我们再上一篇幅中有过解释，如有需要，大家可以看一下</p>
+<p><strong>二、update语句执行过程</strong></p>
+<p>示例语句： update T set c=c+1 where ID=2; </p>
+<p>update 语句的执行跟在上一篇文章中提到的查询流程是类似的，只不过，update语句不会查询缓存，因为在该表执行update的时候，会将该表的缓存清除，所以，update 语句的执行总的来说有四步</p>
+<p><strong>第一步</strong>：连接器连接</p>
+<p><strong>第二步</strong>：分析器会通过词法和语法解析知道这是一条更新语句，有无语法错误</p>
+<p><strong>第三步</strong>：优化器决定要使用 ID 这 个索引</p>
+<p><strong>第四步</strong>：执行器负责具体执行，找到这一行，然后更新</p>
+<p>更加详细的解释请参考上一篇文章  <a href="https://mengzhaolis.github.io/2020/07/06/MySQL归纳总结/" target="_blank" rel="noopener">https://mengzhaolis.github.io/2020/07/06/MySQL%E5%BD%92%E7%BA%B3%E6%80%BB%E7%BB%93/</a> </p>
+<p>但是更新涉及到两个重要的日志就是我们今天要<strong>讨论的重点redo log(重做日志) 和 binlog(归档日志)</strong></p>
+<p><strong>redo log(重做日志)</strong>—引擎层–InnoDB 引擎特有的日志</p>
+<p>我们都知道，MySQL的操作其实说白了就是数据在磁盘上的增、删、改、查，也就是我们会常常提到的 IO ，同理的如果，我们的每一次update都马上落在磁盘上，那么，这个效率大家可想而知，我们所说的缓存也好，还是各种提升效率的办法也好，归根结底就是为了，让程序响应的更快，那么这个时候，我们今天的主角之一 redo log 就登场了</p>
+<p><strong>redo log 的重要作用之一就是不会让每次的update 马上交互到磁盘上，它更像一个账本，记录了有多少update，每当有一个update过来的时候，InnoDB就会把他写到redo log中并更新内存，到这里update的操作就算完成了</strong></p>
+<p>那么你会有一个问题就是，什么时候操作磁盘？</p>
+<p>这个问题问的好，InnoDB引擎会在一个合适的时候将redo log中的update 更新到磁盘，什么是合适的时候呢？也就是我们的系统空闲的时候，而有了 redo log，InnoDB 就可以保证即使数据库发生异常重启，之前提交的记录都不会丢 失，这个能力称为<strong>crash-safe</strong></p>
+<p><strong>binlog(归档日志)</strong>—server层</p>
+<p>binlog 是逻辑日 志，记录的是这个语句的原始逻辑，比如“给 ID=2 这一行的 c 字段加 1，binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志</p>
+<p>下图中解释了update 在binlog中的流程</p>
+<p><img src="/images/mysql/1j-1.png" alt="alt"></p>
+<p><strong>三、什么是主从，如何实现主从</strong></p>
+<p><strong>主从复制</strong>：用来建立一个和主数据库完全一样的环境</p>
+<p><strong>主从同步</strong>：主数据库添加一条数据后，即刻将写入数据的命令发送给从服务器，从而完成主从同步</p>
+<p><strong>优点</strong>：</p>
+<p>1、分摊数据库压力，提高系统的稳定性</p>
+<p>2、当某一台从服务器宕机时，整个系统不受影响</p>
+<p>3、当主服务器宕机时，可以从，从服务器中选择一台充当主服务器</p>
+<p><strong>如何实现主从</strong></p>
+<p>主从复制是MySQL本身就提供的，不需要借助第三方，<strong>使用binlog文件中的sql命令</strong>，</p>
+<p>MySQL的主从复制是一个异步的复制过程，数据库从一个Master复制到Slave数据库，在Master与Slave之间实现整个主从复制的过程是由三个线程参与完成的，其中有两个线程(SQL线程和IO线程)在Slave端，另一个线程(IO线程)在Master端</p>
+<p>MySQL主从复制之前我们需要先启动Master数据库然后再启动Salve数据库，然后在Salve数据库中执行start slave;，执行完成之后，流程就如下了：</p>
+<ol>
+<li>Salve的IO线程会读取mastr.info文件中配置好的主库信息，比如说存放的有：Master数据库的用户名、密码、端口、还有Master的binlog索引位置；</li>
+<li>拿到信息之后就带着信息去链接Master的主库IO线程</li>
+<li>当主库的IO线程先检查SLave传过来的配置信息是否正确，如果正确，就拿着Slave传过来的binlog索引位置和Master库的binlog文件中最后一个索引位置进行对比，如果一致就陷入等待状态，等待Master的binlog索引位置更新；</li>
+<li>如果不一致就把Slave传过来的binlog索引位置往后的所有SQL语句包括最后一条SQL语句的索引位置发送个给Slave的IO线程；</li>
+<li>Slave的IO线程拿到信息之后，先把Master传过来的binlog索引在Slave的master.info文件中进行更新；</li>
+<li>然后再把Master传过来的SQL语句写入到relay文件中，然后继续循环执行第二个步骤；</li>
+<li>Slave的SQL线程会一直持续的观察relay日志文件中是否有改动，如果没有就继续监听；</li>
+<li>如果发现relay中有变动，那么就获取变动的内容转换为SQL语句，并且把SQL语句在Salve的数据库中进行执行</li>
+</ol>
+
+      </div>
+      
+      <footer class="post-footer">
+        <div class="post-tags">
+            <a href="/tags/%E4%B8%BB%E4%BB%8E%E5%90%8C%E6%AD%A5/">主从同步</a>
+            </div>
+        
+        <nav class="post-nav"><a class="next" href="/2020/07/06/MySQL%E5%BD%92%E7%BA%B3%E6%80%BB%E7%BB%93/">
+        <span class="next-text nav-default">MySQL归纳总结</span>
+        <span class="prev-text nav-mobile">下一篇</span>
+        <i class="iconfont icon-right"></i>
+      </a>
+    </nav></footer>
+    </article></div><div class="comments" id="comments"></div></div>
+      </main>
+
+      <footer id="footer" class="footer"><div class="social-links"><a href="mailto:1912882425@qq.com" class="iconfont icon-email" title="email"></a>
+        <a href="https://github.com/ahonn" target="_blank" rel="noopener" class="iconfont icon-github" title="github"></a>
+        <a href="/atom.xml" class="iconfont icon-rss" title="rss"></a>
+    </div><div class="copyright">
+  <span class="power-by">
+    由 <a class="hexo-link" href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> 强力驱动
+  </span>
+  <span class="division">|</span>
+  <span class="theme-info">
+    主题 - 
+    <a class="theme-link" href="https://github.com/ahonn/hexo-theme-even" target="_blank" rel="noopener">Even</a>
+  </span>
+
+  <span class="copyright-year">&copy;2015 - 2020<span class="heart">
+      <i class="iconfont icon-heart"></i>
+    </span>
+    <span class="author">Mzl</span>
+  </span>
+</div>
+</footer>
+
+      <div class="back-to-top" id="back-to-top">
+        <i class="iconfont icon-up"></i>
+      </div>
+    </div><script type="text/javascript" src="/lib/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="/lib/slideout/slideout.js"></script>
+  <script type="text/javascript" src="/lib/fancybox/jquery.fancybox.pack.js"></script>
+  <script type="text/javascript" src="/js/src/even.js?v=2.11.0"></script>
+</body>
+</html>
